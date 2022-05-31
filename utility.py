@@ -1,7 +1,4 @@
-import logging, sys, os
-PATH = '\\'.join(os.getcwd().split('\\')[:-1])
-print(PATH)
-sys.path.append(PATH)
+import logging, sys
 logger = logging.getLogger("prophet")
 handler2 = logging.StreamHandler(sys.stdout)
 handler2.setLevel(logging.INFO)
@@ -15,13 +12,11 @@ logger.addHandler(handler2)
 logger2 = logging.getLogger("pystan")
 logger2.addHandler(handler2)
 
-
 import yfinance as yf
-from tf_toolbox.ds_modules import *
-from tf_toolbox.tidy_modules import *
-from tf_toolbox.viz_modules import *
-from tf_toolbox.parallell_modules import *
-from prophet import Prophet
+from ds_modules import *
+from tidy_modules import *
+from viz_modules import *
+from parallell_modules import *
 
 def get_stock_history(ticker = 'PARA', period='1y'):
     """
@@ -68,10 +63,6 @@ def predict_stock(ticker= 'PARA', period='1y', horizon=90):
     model.fit(df)
     future = model.make_future_dataframe(periods=90)
     pred = model.predict(future)[['ds', 'yhat_lower', 'yhat_upper', 'yhat']]
-    pred_ = pd.merge(pred, df, on='ds', how='left')
-    pred_ = pred_.dropna()
-    coverage_rate = np.where((pred_.y >= pred_.yhat_lower) & (pred_.y <=pred_.yhat_upper),1,0).mean()
-    pred['coverage_rate'] = coverage_rate
 
     return pred
 
@@ -132,23 +123,21 @@ def plot_stock_forecast(ticker= 'PARA', period='1y', horizon=90):
         yaxis_title='$')
     return fig
 
-def sp500_expectation(i, ticker_list, company_name_list, sector_list, horizon = 90, period='1y'):
+def sp500_expectation(i, ticker_list, company_name_list, sector_list, horizon = 90):
     ticker = ticker_list[i]
     company_name = company_name_list[i]
     sector = sector_list[i]
     try:
-        hist = get_stock_history(ticker=ticker, period=period)
+        hist = get_stock_history(ticker=ticker)
         current_price = hist['Close'][-1]
-        pred = predict_stock(ticker=ticker, horizon=horizon, period=period)
+        pred = predict_stock(ticker=ticker, horizon=horizon)
         expected_price = pred['yhat'][len(pred)-1]
         roi = expected_price/current_price-1
-        coverage_rate = pred['coverage_rate'][0]
 
     except:
         current_price = None
         expected_price = None
         roi = None
-        coverage_rate = None
     output = {
         'Company': company_name,
         'Symbol': ticker,
@@ -156,13 +145,12 @@ def sp500_expectation(i, ticker_list, company_name_list, sector_list, horizon = 
         'Current_Price': current_price,
         'Expected_Price': expected_price,
         'Horizon': horizon,
-        'ROI': roi,
-        'Coverage': coverage_rate
+        'ROI': roi
     }
     return output
 
 def get_projection(file_path='https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv', 
-    horizon = 90, n_jobs=-2, period='1y'):
+    horizon = 90, n_jobs=-2):
     # get list of stock
     stock_table = pd.read_csv(file_path)
     try:
@@ -186,7 +174,6 @@ def get_projection(file_path='https://raw.githubusercontent.com/datasets/s-and-p
                 company_name_list=company_name_list,
                 sector_list=sector_list,
                 horizon=horizon,
-                period=period
                 ) 
             for i in range(len(stock_table))
             )

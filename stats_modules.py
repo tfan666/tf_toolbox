@@ -6,7 +6,7 @@ import numpy as np
 
 def least_square(X, y):
     beta = np.linalg.inv(X.T@X) @ X.T @y
-    beta_0 = (X @ beta - y).mean()
+    beta_0 = (X @ beta).mean() - y.mean()
     return beta, beta_0
 
 class linear_regression:
@@ -14,8 +14,7 @@ class linear_regression:
     def __init__(self, X, y):
         self.X = X
         self.y = y
-        self.beta = None
-        self.beta_0 = None
+        self.para = {}
         self.method = None
     
     def fit(self, method='OLS'):
@@ -27,7 +26,10 @@ class linear_regression:
             - L2: Ridge Regression
         """
         if method == 'OLS':
-            self.beta, self.beta_0 = least_square(X=self.X, y=self.y)
+            
+            beta, beta_0 = least_square(X=self.X, y=self.y)
+            self.para['coef'] = beta
+            self.para['intercept'] = beta_0
         elif method == 'GD':
             print('Gridient Desecnt WIP')
         elif method == 'L1':
@@ -38,10 +40,10 @@ class linear_regression:
 
     def predict(self, new_X):
         if self.method == 'OLS':
-            y = new_X @ self.beta + self.beta_0
+            beta = self.para['coef']
+            beta_0 = self.para['intercept']
+            y = new_X @ beta + beta_0
             return y
-
-        
 
 def poisson(x, _lambda):
         fx = _lambda**x * np.exp(1)**(-_lambda) / np.math.factorial(x)

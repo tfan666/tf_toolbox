@@ -8,7 +8,7 @@ from googleapiclient.errors import HttpError
 
 def get_sheet_data(
     SAMPLE_RANGE_NAME,
-    SAMPLE_SPREADSHEET_ID='16_zCSxNRXnw9sgHBzdAjsu7k4fQiaf4EvS6hrXzJmQ8'):
+    SAMPLE_SPREADSHEET_ID):
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """

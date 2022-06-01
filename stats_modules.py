@@ -10,6 +10,7 @@ def least_square(X, y):
     return beta, beta_0
 
 class linear_regression:
+    "This class stores methods for linear regressions"
     def __init__(self, X, y):
         self.X = X
         self.y = y
@@ -18,6 +19,13 @@ class linear_regression:
         self.method = None
     
     def fit(self, method='OLS'):
+        """
+        This function fit the given data. Available methods:
+            - OLS: simple linear regression (Orindary Least Square)
+            - GD:Gradient Desecent
+            - L1: Lasso Regression
+            - L2: Ridge Regression
+        """
         if method == 'OLS':
             self.beta, self.beta_0 = least_square(X=self.X, y=self.y)
         elif method == 'GD':

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from google.cloud import bigquery, storage
-import plotly.graph_objects as go
 
 
 def check_bq_price(sql):

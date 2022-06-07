@@ -3,7 +3,6 @@ from this import d
 from ipywidgets import interact, interactive, fixed, interact_manual
 from sklearn.metrics import classification_report, brier_score_loss, log_loss, recall_score, precision_score, accuracy_score
 import sys
-from prophet import Prophet
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy.stats import skew, kurtosis

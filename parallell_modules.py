@@ -77,7 +77,7 @@ class ETS:
             seasonal_periods=para_['seasonal_periods'][0]).fit(full_output=False, disp=False)
         self.model = model
     
-    def predict(self, horizon, sig = 0.5 , CI = False):
+    def predict(self, horizon, sig = 0.05 , CI = False):
         if CI == False:
             pred = self.model.forecast(horizon)
             return pred

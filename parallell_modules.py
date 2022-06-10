@@ -20,10 +20,12 @@ class ETS:
         self.para_search_records = None
         self.model = None
         self.alpha = 0.05
+        self.ts_cv = 5
 
-    def get_tscv_results(self, error, trend, seasonal, seasonal_periods, n_spilit=5):
+    def get_tscv_results(self, error, trend, seasonal, seasonal_periods):
         y = self.y
         y = y.interpolate().dropna()
+        n_spilit = self.ts_cv
         idx = get_n_spilt_index(y, n_spilit)
 
         output = []
@@ -64,7 +66,8 @@ class ETS:
         r = pd.DataFrame(r).sort_values('mean_rmse', ascending=True).reset_index(drop=True)
         self.para_search_records = r
     
-    def fitcv(self, para, n_jobs=-2):
+    def fitcv(self, para, n_jobs=-2, n_spilit=5):
+        self.ts_cv = n_spilit
         y = self.y
         self.search_para(para, n_jobs)
         para_ = self.para_search_records[:1]
@@ -77,9 +80,9 @@ class ETS:
             seasonal_periods=para_['seasonal_periods'][0]).fit(full_output=False, disp=False)
         self.model = model
     
-    def predict(self, horizon, sig = 0.05 , CI = False):
+    def predict(self, horizon, sig = 0.5 , CI = False):
         if CI == False:
-            pred = self.model.forecast(horizon)
+            pred = np.array(self.model.forecast(horizon))
             return pred
         if CI == True:
             self.alpha = sig 
@@ -95,4 +98,3 @@ class ETS:
             })
             return pred
             
-    

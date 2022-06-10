@@ -1,6 +1,7 @@
 from joblib import load, dump, Parallel, delayed
 from sklearn.metrics import mean_squared_error
 from scipy.stats import norm
+from statsmodels.tsa.exponential_smoothing.ets import ETSModel
 import numpy as np
 
 def get_n_spilt_index(data, n_spilit=5):

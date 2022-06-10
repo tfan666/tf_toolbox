@@ -3,6 +3,7 @@ from sklearn.metrics import mean_squared_error
 from scipy.stats import norm
 from statsmodels.tsa.exponential_smoothing.ets import ETSModel
 import numpy as np
+import pandas as pd
 
 def get_n_spilt_index(data, n_spilit=5):
     index_list_in = np.arange((len(data)))

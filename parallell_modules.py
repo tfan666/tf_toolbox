@@ -16,7 +16,7 @@ def get_n_spilt_index(data, n_spilit=5):
 
 class ETS:
     def __init__(self, y):
-        self.y = y
+        self.y = y.astype(float)
         self.best_para = None
         self.n_jobs = -2
         self.para_search_records = None
@@ -31,28 +31,37 @@ class ETS:
         idx = get_n_spilt_index(y, n_spilit)
 
         output = []
-        for i in range(n_spilit):
-            train, test = y[: idx[i]], y[idx[i]:]
-            model = ETSModel(
-                endog=y, 
-                error=error, 
-                trend=trend, 
-                seasonal=seasonal, 
-                seasonal_periods=seasonal_periods).fit(full_output=False, disp=False)
+        try:
+            for i in range(n_spilit):
+                train, test = y[: idx[i]], y[idx[i]:]
+                model = ETSModel(
+                    endog=y, 
+                    error=error, 
+                    trend=trend, 
+                    seasonal=seasonal, 
+                    seasonal_periods=seasonal_periods).fit(full_output=False, disp=False)
 
-            pred = model.forecast(len(test))
-            rmse = mean_squared_error(y_true=test, y_pred=pred)**(0.5)
-            output.append(rmse)
-        output = np.array(output)
-        mean_rmse = output.mean()
-        sd_rmse = output.std()
-        output_dict = {
-            'mean_rmse': mean_rmse,
-            'std_rmse': sd_rmse,
-            'error': error,
-            'trend': trend,
-            'seasonal': seasonal,
-            'seasonal_periods': seasonal_periods}
+                pred = model.forecast(len(test))
+                rmse = mean_squared_error(y_true=test, y_pred=pred)**(0.5)
+                output.append(rmse)
+            output = np.array(output)
+            mean_rmse = output.mean()
+            sd_rmse = output.std()
+            output_dict = {
+                'mean_rmse': mean_rmse,
+                'std_rmse': sd_rmse,
+                'error': error,
+                'trend': trend,
+                'seasonal': seasonal,
+                'seasonal_periods': seasonal_periods}
+        except:
+            output_dict = {
+                'mean_rmse': None,
+                'std_rmse': None,
+                'error': error,
+                'trend': trend,
+                'seasonal': seasonal,
+                'seasonal_periods': seasonal_periods}
         return output_dict
 
     def search_para(self, para, n_jobs = -2):
@@ -67,6 +76,7 @@ class ETS:
                 )
         r = pd.DataFrame(r).sort_values('mean_rmse', ascending=True).reset_index(drop=True)
         self.para_search_records = r
+        self.best_para = r[:1]
     
     def fitcv(self, para, n_jobs=-2, n_spilit=5):
         self.ts_cv = n_spilit
@@ -81,6 +91,16 @@ class ETS:
             seasonal=para_['seasonal'][0], 
             seasonal_periods=para_['seasonal_periods'][0]).fit(full_output=False, disp=False)
         self.model = model
+
+    def fit(self, seasonal_periods=None, error='add', trend='add', seasonal=None):
+        y = self.y
+        model = ETSModel(
+            endog=y, 
+            error=error, 
+            trend=trend, 
+            seasonal=seasonal, 
+            seasonal_periods=seasonal_periods).fit(full_output=False, disp=False)
+        self.model = model
     
     def predict(self, horizon, sig = 0.05 , CI = False):
         if CI == False:
@@ -89,7 +109,7 @@ class ETS:
         if CI == True:
             self.alpha = sig 
             z = norm.ppf(1-sig/2)
-            SE = y.std() * np.sqrt(1 + 1/np.arange(1, horizon+1))
+            SE = self.y.std() * np.sqrt(1 + 1/np.arange(1, horizon+1))
             forecast_mean = self.model.forecast(horizon)
             forecast_lo = forecast_mean - z * SE, 
             forecast_hi = forecast_mean + z * SE

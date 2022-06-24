@@ -1,10 +1,12 @@
 import os.path
 import pandas as pd 
+import numpy as np
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from google.cloud import bigquery, storage
 
 def get_sheet_data(
     SAMPLE_RANGE_NAME,
@@ -55,3 +57,29 @@ def get_sheet_data(
     df = pd.DataFrame(values[1:])
     df.columns = col_name
     return df
+
+
+
+
+def check_bq_price(sql):
+    client = bigquery.Client()
+    job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
+    query_job = client.query(sql, job_config=job_config)  # Make an API request.
+    QUERY_COST = round(query_job.total_bytes_processed*1e-12*5, 3)
+    # A dry run query completes immediately.
+    print(f"This query will cost $ {QUERY_COST}.")
+
+def read_bq(sql, dry_run=False):
+    if dry_run==False:
+        client = bigquery.Client()
+        df = client.query(sql).to_dataframe()
+        return df    
+    else:
+        check_bq_price(sql=sql)
+
+def get_bq_price(sql):
+    client = bigquery.Client()
+    job_config = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
+    query_job = client.query(sql, job_config=job_config)  # Make an API request.
+    QUERY_COST = round(query_job.total_bytes_processed*1e-12*5, 3)
+    return QUERY_COST

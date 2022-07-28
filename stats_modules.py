@@ -38,15 +38,6 @@ class linear_regression:
         self.method = None
         self.residuals = None
     
-class linear_regression:
-    "This class stores methods for linear regressions"
-    def __init__(self, X, y):
-        self.X = X
-        self.y = y
-        self.para = {}
-        self.method = None
-        self.residuals = None
-    
     def fit(self, method='OLS', _lambda=1):
         """
         This function fit the given data. Available methods:

@@ -7,8 +7,7 @@ def least_square(X, y, use_solver=False):
         beta = np.linalg.inv(X.T@X) @ X.T @y
     else:
         beta = solve(a=X.T @ X, b=X.T @ y)
-    beta_0 = (X @ beta).mean() - y.mean()
-    return beta, beta_0
+    return beta
 
 def wald_test(p_hat, p_0, n):
     t = (p_hat - p_0) / (np.sqrt(p_hat *(1-p_hat)/n)) 
@@ -47,13 +46,11 @@ class linear_regression:
         # check fitting methods
         if method == 'OLS':
             
-            beta, beta_0 = least_square(X=self.X, y=self.y)
+            beta = least_square(X=self.X, y=self.y)
             self.para['coef'] = beta
-            self.para['intercept'] = beta_0
         elif method == 'OLS_solver':
-            beta, beta_0 = least_square(X=self.X, y=self.y, use_solver=True)
+            beta = least_square(X=self.X, y=self.y, use_solver=True)
             self.para['coef'] = beta
-            self.para['intercept'] = beta_0
         elif method == 'GD':
             print('Gridient Desecnt WIP')
         elif method == 'L1':
@@ -69,8 +66,7 @@ class linear_regression:
     def predict(self, new_X):
         if self.method == 'OLS' or self.method == 'OLS_solver':
             beta = self.para['coef']
-            beta_0 = self.para['intercept']
-            y = new_X @ beta + beta_0
+            y = new_X @ beta
             return y
 
 def poisson(x, _lambda):

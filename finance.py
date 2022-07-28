@@ -13,10 +13,11 @@ logger2 = logging.getLogger("pystan")
 logger2.addHandler(handler2)
 
 import yfinance as yf
-from ds_modules import *
-from tidy_modules import *
-from viz_modules import *
-from parallell_modules import *
+from prophet import Prophet
+from tf_toolbox.ds_modules import *
+from tf_toolbox.viz_modules import *
+from tf_toolbox.google_lib import *
+from tf_toolbox.parallell_modules import *
 
 def get_stock_history(ticker = 'PARA', period='1y'):
     """

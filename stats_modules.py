@@ -9,6 +9,10 @@ def least_square(X, y, use_solver=False):
         beta = solve(a=X.T @ X, b=X.T @ y)
     return beta
 
+def ridge_least_square(X, y, _lambda):
+    beta = np.linalg.inv(X.T@X + _lambda * np.identity(len(X.T@X))) @ X.T @y
+    return beta
+
 def wald_test(p_hat, p_0, n):
     t = (p_hat - p_0) / (np.sqrt(p_hat *(1-p_hat)/n)) 
     return t
@@ -34,7 +38,16 @@ class linear_regression:
         self.method = None
         self.residuals = None
     
-    def fit(self, method='OLS'):
+class linear_regression:
+    "This class stores methods for linear regressions"
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+        self.para = {}
+        self.method = None
+        self.residuals = None
+    
+    def fit(self, method='OLS', _lambda=1):
         """
         This function fit the given data. Available methods:
             - OLS: simple linear regression (Orindary Least Square) using matrix multplication
@@ -56,18 +69,19 @@ class linear_regression:
         elif method == 'L1':
             print('L1 WIP')
         elif method == 'L2':
-            print('L2 WIP')
+            X = self.X
+            y = self.y
+            beta = ridge_least_square(X=X, y=y, _lambda=_lambda)
+            self.para['coef'] = beta
         else:
             print('Method not found')
         # update model class
         self.method = method
         self.residuals = self.y-self.predict(self.X)
-
     def predict(self, new_X):
-        if self.method == 'OLS' or self.method == 'OLS_solver':
-            beta = self.para['coef']
-            y = new_X @ beta
-            return y
+        beta = self.para['coef']
+        y = new_X @ beta
+        return y
 
 def poisson(x, _lambda):
         fx = _lambda**x * np.exp(1)**(-_lambda) / np.math.factorial(x)

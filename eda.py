@@ -27,6 +27,13 @@ class eda:
     def __init__(self, df):
         self.df = df
 
+    def size(self):
+        n_cols = self.df.shape[1]
+        n_rows = self.df.shape[0]
+        size = self.df.memory_usage().sum()/1e9
+        print(f"This dataset has {n_cols} columns and {n_rows} rows. The estimated storage size is {size} GB ")
+        
+
     def column_type_report(self):
         """
         Compute table format column data type report. 

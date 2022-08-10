@@ -1,10 +1,7 @@
 from __future__ import print_function
 from this import d
 from ipywidgets import interact, interactive, fixed, interact_manual
-from sklearn.metrics import classification_report, brier_score_loss, log_loss, recall_score, precision_score, accuracy_score
 import sys
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 from scipy.stats import skew, kurtosis, shapiro
 import seaborn as sns
 import numpy as np
@@ -153,11 +150,13 @@ class eda:
             nrows=grid[0], 
             ncols=grid[1], 
             figsize=fig_size)
-        plt.subplots_adjust(hspace=0.5)
+        plt.subplots_adjust(hspace=1.5)
         fig.suptitle("Distribution Plots", fontsize=fig_size[0], y=0.95)
 
         # loop through tickers and axes
         for col, ax in zip(df.columns, axs.ravel()):
+            skewness = round(skew(df[col]), 2)
+            _kurtosis = round(kurtosis(df[col]), 2)
             if type == 'histogram':
                 sns.histplot(x=col, data=df, ax=ax)
             elif type == 'density':
@@ -170,6 +169,7 @@ class eda:
                 sns.violinplot(y=col, data=df, ax=ax)
             else:
                 print("Type has to be one of 'box', 'violin', 'density', 'histogram', or 'histogram+kde.")
+            ax.set_title(f"Skewness: {skewness} | Kurtosis: {_kurtosis} ")
 
         plt.show()
     
@@ -312,6 +312,17 @@ class eda:
             square=True, linewidths=.5, 
             cbar_kws={"shrink": .5})
         ax.set_title(fig_title, fonsize=fig_size[0])
+
+    def association_plot(self, columns=None):
+        """
+        This function plots assocaition scatterplot.
+        """
+        df = self.df
+        if columns==None:
+            columns = df.select_dtypes([float, int])
+        df = df[columns]
+        g = sns.PairGrid(df)
+        g.map(sns.scatterplot)
 
     def normality_test(self, sig=.05):
         df = self.df.select_dtypes([float, int])

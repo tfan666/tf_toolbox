@@ -21,3 +21,7 @@ def f2_score(y_true=None, y_pred=None, precision=None, recall=None, type='direct
         return f2_score
     else:
         sys.exit("type has to be one of 'direct' or 'indirect'.")
+
+def log_loss(y_prob, y_true):
+    log_loss = -(y*np.log(p) + (1-y)*np.log(1-p)).mean()
+    return log_loss

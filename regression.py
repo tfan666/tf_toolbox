@@ -15,29 +15,30 @@ def ridge_least_square(X, y, _lambda):
     beta = np.linalg.inv(X.T@X + _lambda * np.identity(len(X.T@X))) @ X.T @y
     return beta
 
-def wald_test(p_hat, p_0, n):
-    t = (p_hat - p_0) / (np.sqrt(p_hat *(1-p_hat)/n)) 
-    return t
+def l1_cost_function(beta_l1, _lambda, X, y):
+    beta_l1 = np.matrix(beta_l1).reshape(X.shape[1],1)
+    cost = (1/2)*np.power((y - X @ beta_l1 ),2).sum() + _lambda * abs(beta_l1).sum()
+    return cost
 
-def binominal_test(p_hat, p_0, n):
-    t = (p_hat - p_0) / (np.sqrt(p_0 *(1-p_0)/n)) 
-    return t
+def l1_cost_minimize(x0, _lambda, X, y):
+    x0 = np.matrix(x0).reshape(len(x0),1)
 
-def wald_test_interval(p_hat, Z, p_0, n):
-    return p_hat + np.array([-1,1]) * Z* np.sqrt(p_hat * (1 - p_hat) /n)
-
-def score_test_interval(p_hat, Z, p_0, n):
-    t = p_hat * (n/(n+Z**2)) + 1/2 * (Z**2/(n+Z**2)) + np.array([-1,1]) *\
-    Z * np.sqrt(1/(n+Z**2) * (p_hat *(1-p_hat) * (n/n+Z**2) + 1/4 * (Z**2/n+Z**2)))
-    return t
+    res = opt.minimize(
+        fun=l1_cost_function, 
+        options={'maxiter':100000},
+        # jac=grad,
+        args=(_lambda, X,y),
+        x0=x0)
+    beta_l1 = res['x']
+    return beta_l1
 
 class linear_regression:
     "This class stores methods for linear regressions"
     def __init__(self, X, y):
-        if isinstance(X, np.ndarray) == True:
+        if isinstance(X, np.matrix) == True:
             self.X = X
         else:
-            self.X = np.array(X)
+            self.X = np.matrix(X)
         
         self.y = y
         self.para = {}
@@ -60,7 +61,6 @@ class linear_regression:
         """
         # check fitting methods
         if method == 'OLS':
-            
             beta = least_square(X=self.X, y=self.y)
             self.para['coef'] = beta
         elif method == 'OLS_solver':
@@ -69,7 +69,11 @@ class linear_regression:
         elif method == 'GD':
             print('Gridient Desecnt WIP')
         elif method == 'L1':
-            print('L1 WIP')
+            X = self.X
+            y = self.y
+            x0 = np.zeros(X.shape[1])
+            beta = l1_cost_minimize(x0=x0, _lambda=_lambda, X=X, y=y)
+            self.para['coef'] = beta
         elif method == 'L2':
             X = self.X
             y = self.y
@@ -80,14 +84,15 @@ class linear_regression:
         # update model class
         self.method = method
         self.residuals = self.y-self.predict(self.X)
-        self.RSS = ((self.residuals)**2).sum()
-        self.TSS = ((self.y - self.y.mean())**2).sum()
+        self.RSS = (np.power(self.residuals,2)).sum()
+        self.TSS = (np.power(self.y - self.y.mean(),2)).sum()
         self.r_squared = 1 - self.RSS/self.TSS
-        self.sd_resid = (self.RSS/(self.n-2))**.5
+        self.sd_resid = np.power(self.RSS/(self.n-2),0.5)
 
     def predict(self, new_X, interval=None, level=0.95, n_jobs=1):
         beta = self.para['coef']
-        y = new_X @ beta
+        y = new_X @ beta 
+        y = np.array(y).reshape(self.n,)
         if interval == None:
             return y
         
@@ -100,7 +105,7 @@ class linear_regression:
         critical_value = t.ppf(1-alpha/2, self.n-2)
 
         def report(i, interval):
-            x0 = np.matrix(new_X)[i]
+            x0 = new_X[i]
             X = self.X
             if interval == 'confidence':
                 SE_ = np.float64(np.sqrt(self.sd_resid**2 * x0 @ np.linalg.inv(X.T @ X) @ x0.T))
@@ -131,6 +136,3 @@ class linear_regression:
 
         return pd.DataFrame(r)
 
-def poisson(x, _lambda):
-        fx = _lambda**x * np.exp(1)**(-_lambda) / np.math.factorial(x)
-        return fx 

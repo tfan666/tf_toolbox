@@ -148,7 +148,7 @@ class eda:
         elif type == 'strip':
             ax = sns.stripplot(y=col, x=group, data=df)
         else:
-            print("Type has to be one of 'box', 'violin', 'density', 'histogram', 'strip', or 'histogram+kde." )
+            print("Type has to be one of 'boxplot', 'violin', 'density', 'histogram', 'strip', or 'histogram+kde'." )
         ax.set_title(
             f"Distribution for {col} by {group}",
             fontsize=fig_size[0]
@@ -187,7 +187,7 @@ class eda:
             elif type == 'violin':
                 sns.violinplot(y=col, data=df, ax=ax)
             else:
-                print("Type has to be one of 'box', 'violin', 'density', 'histogram', or 'histogram+kde.")
+                print("Type has to be one of 'boxplot', 'violin', 'density', 'histogram', or 'histogram+kde.")
             ax.set_title(f"Skewness: {skewness} | Kurtosis: {_kurtosis} ")
 
         plt.show()

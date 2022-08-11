@@ -96,8 +96,8 @@ class eda:
         df = self.df
         x = df[col]
         missing_pct = round(x.isnull().sum()/len(x)*100, 1)
-        skewness = round(skew(x), 2)
-        _kurtosis = round(kurtosis(x), 2)
+        skewness = round(skew(x.dropna()), 2)
+        _kurtosis = round(kurtosis(x.dropna()), 2)
         if type == 'histogram':
             if group ==None:
                 ax = sns.histplot(x=x)
@@ -130,10 +130,13 @@ class eda:
                 f"Distribution for {col} | Skewness: {skewness} | Kurtosis: {_kurtosis} | Missing Pct: {missing_pct}% ",
                 fontsize=fig_size[0])
         else:
-            ax.set_title(f'Distribution of {col} by {group}', fontsize=fig_size[0])
+            ax.set_title(f'Distribution of {col} By {group.capitalize()}', fontsize=fig_size[0])
 
 
     def plot_bivariate_distribution(self, col, group, type='density', fig_size=(12,8)):
+        """
+        WIP
+        """
         df = self.df
         sns.set(rc={'figure.figsize':fig_size})
         if type == 'histogram':
@@ -151,15 +154,16 @@ class eda:
         else:
             print("Type has to be one of 'boxplot', 'violin', 'density', 'histogram', 'strip', or 'histogram+kde'." )
         ax.set_title(
-            f"Distribution for {col} by {group}",
+            f"Distribution for {col} By {group.capitalize()}",
             fontsize=fig_size[0]
         )
 
-    def plot_grid_univariate_distribution(self, type='histogram', grid=None, fig_size=(15,12)):
+    def plot_grid_univariate_distribution(self, type='histogram', grid=None, group=None, fig_size=(15,12)):
         """
         Plot multiple distribution in grid. Pass 'grid' as tuple (n_rows, n_cols). Default will be
         3 cols. 
         """
+    
         df = self.df.select_dtypes([int,float])
         if grid ==None:
             n = len(df.columns)
@@ -171,25 +175,45 @@ class eda:
             ncols=grid[1], 
             figsize=fig_size)
         plt.subplots_adjust(hspace=1.5)
-        fig.suptitle("Distribution Plots", fontsize=fig_size[0], y=0.95)
+        if group==None:
+            fig.suptitle("Distribution Plots", fontsize=fig_size[0], y=0.95)
+        else:
+            fig.suptitle(f"Distribution Plots By {group.capitalize()}", fontsize=fig_size[0], y=0.95)
 
         # loop through tickers and axes
         for col, ax in zip(df.columns, axs.ravel()):
-            skewness = round(skew(df[col]), 2)
-            _kurtosis = round(kurtosis(df[col]), 2)
+            skewness = round(skew(df[col].dropna()), 2)
+            _kurtosis = round(kurtosis(df[col].dropna()), 2)
             if type == 'histogram':
-                sns.histplot(x=col, data=df, ax=ax)
+                if group==None:
+                    sns.histplot(x=col, data=df, ax=ax)
+                else:
+                    sns.histplot(x=col, hue=group, data=self.df, ax=ax)
             elif type == 'density':
-                sns.kdeplot(x=col, data=df, ax=ax)
+                if group==None:
+                    sns.kdeplot(x=col, data=df, ax=ax)
+                else:
+                    sns.kdeplot(x=col, hue=group, data=self.df, ax=ax)
             elif type == 'histogram+density':
-                sns.histplot(x=col, data=df, kde=True ,ax=ax)
-            elif type == 'box':
-                sns.boxplot(y=col, data=df, ax=ax)
+                if group==None:
+                    sns.histplot(x=col, data=df, kde=True ,ax=ax)
+                else:
+                    sns.histplot(x=col, hue=group, data=self.df, kde=True ,ax=ax)
+            elif type == 'boxplot':
+                if group==None:
+                    sns.boxplot(y=col, data=df, ax=ax)
+                else:
+                    sns.boxplot(y=col, x=group, data=self.df, ax=ax)
             elif type == 'violin':
-                sns.violinplot(y=col, data=df, ax=ax)
+                if group==None:
+                    sns.violinplot(y=col, data=df, ax=ax)
+                else:
+                    sns.violinplot(y=col, x=group, data=self.df, ax=ax)
             else:
                 print("Type has to be one of 'boxplot', 'violin', 'density', 'histogram', or 'histogram+kde.")
-            ax.set_title(f"Skewness: {skewness} | Kurtosis: {_kurtosis} ")
+            if group==None:
+                ax.set_title(f"Skewness: {skewness} | Kurtosis: {_kurtosis} ")
+
 
         plt.show()
     
@@ -230,7 +254,7 @@ class eda:
         ax.bar_label(ax.containers[0])
         ax.set_title('Countplot For '+column, fontsize=fig_size[0])
 
-    def plot_grid_univariate_countplot(self, grid=None, top=10, fig_size=(15,12)):
+    def plot_grid_univariate_countplot(self, grid=None, group=None, top=10, fig_size=(15,12)):
         """
         Plot multiple countplot in grid. Pass 'grid' as tuple (n_rows, n_cols). Default will be
         2 cols. 
@@ -246,15 +270,24 @@ class eda:
             ncols=grid[1], 
             figsize=fig_size)
         plt.subplots_adjust(hspace=0.5)
-        fig.suptitle("Countplot Plots", fontsize=fig_size[0], y=0.95)
+        if group==None:
+            fig.suptitle("Countplot Plots", fontsize=fig_size[0], y=0.95)
+        else: 
+            fig.suptitle(f"Countplot Plots By {group.capitalize()}", fontsize=fig_size[0], y=0.95)
 
         # loop through tickers and axes
         for col, ax in zip(df.columns, axs.ravel()):
             count_table = self.show_value_count(column=col, top=top)
-            sns.barplot(data=count_table, x='cate', y='pct', ax=ax)
-            ax.bar_label(ax.containers[0])
-            ax.set_xlabel('')
-            ax.set_title(col)
+            if group==None:
+                sns.barplot(data=count_table, x='cate', y='pct', ax=ax)
+                ax.bar_label(ax.containers[0])
+                ax.set_xlabel('')
+                ax.set_title(col)
+            else:
+                sns.countplot(x=col, hue=group ,data=self.df, ax=ax)
+                ax.set_xlabel('')
+                ax.set_title(f"{col} Count By {group.capitalize()}")
+                
         plt.show()
 
     
@@ -290,16 +323,16 @@ class eda:
         if keyword_filter == None:
             interact(
                 self.show_value_count, 
-                cols = df.select_dtypes('object').columns)
+                column = df.select_dtypes('object').columns)
         else:
             keywords = df.select_dtypes('object').columns.str.contains(keyword_filter)
             interact(
                 self.show_value_count, 
-                cols = df.select_dtypes('object').columns[keywords])
+                column = df.select_dtypes('object').columns[keywords])
 
     def explore_univar_dist(self, keyword_filter=None):
         """
-        Compute Interactive Univariate Distribution Plot.
+        Compute Interactive Univariate Distribution Plot. WIP
         """
         df = self.df
         if keyword_filter == None:

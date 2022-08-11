@@ -330,15 +330,32 @@ class eda:
                 self.show_value_count, 
                 column = df.select_dtypes('object').columns[keywords])
 
-    def explore_univar_dist(self, keyword_filter=None):
+    def explore_univar_dist(self, type= 'histogram' ,keyword_filter=None):
         """
         Compute Interactive Univariate Distribution Plot. WIP
         """
         df = self.df
+        def g(col, type):
+            skewness = round(skew(self.df[col].dropna()), 2)
+            _kurtosis = round(kurtosis(self.df[col].dropna()), 2)
+            missing_pct = round(df[col].isnull().sum()/len(self.df),2)
+            if type=='histogram':
+                ax = sns.histplot(data=self.df, x=col)
+            elif type == 'density':
+                ax = sns.kdeplot(data=self.df, x=col)
+            elif type == 'histogram+density':
+                ax = sns.histplot(data=self.df, x=col, kde=True)
+            elif type == 'boxplot':
+                ax = sns.boxplot(data=self.df, y=col)
+            elif type == 'violin':
+                ax = sns.violinplot(data=self.df, y=col)
+
+            ax.set_title(f"Skewness: {skewness} | Kurtosis: {_kurtosis} | Missing: {missing_pct} ")
         if keyword_filter == None:
             interact(
-                self.plot_univariate_distribution, 
-                col = df.select_dtypes([float, int]).columns)
+                g, 
+                col=self.df.select_dtypes([float, int]).columns, 
+                type=type)
 
     def correlation_plot(self, correlation_method='pearson', fig_size=(20,15), fig_title=''):
         """

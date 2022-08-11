@@ -278,7 +278,7 @@ class eda:
             cmap=['#7FB3D5', '#D7DBDD'],
             cbar=False,
             xticklabels=df.columns)
-        ax.set_title(fig_title, fonsize=fig_size[0])
+        ax.set_title(fig_title, fontsize=fig_size[0])
 
     def explore_cate(self, keyword_filter=None):
         """
@@ -330,7 +330,7 @@ class eda:
             annot=True, fmt='.2f',
             square=True, linewidths=.5, 
             cbar_kws={"shrink": .5})
-        ax.set_title(fig_title, fonsize=fig_size[0])
+        ax.set_title(fig_title, fontsize=fig_size[0])
 
     def association_plot(self, columns=None):
         """

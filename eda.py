@@ -224,6 +224,7 @@ class eda:
         return d
     
     def univariate_categorical_countplot(self, column, top=10, fig_size=(10,6)):
+        sns.set(rc={'figure.figsize':fig_size})
         count_table = self.show_value_count(column=column, top=top)
         ax = sns.barplot(data=count_table, x='cate', y='pct')
         ax.bar_label(ax.containers[0])

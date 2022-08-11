@@ -4,6 +4,7 @@ from ipywidgets import interact, interactive, fixed, interact_manual
 import sys
 from scipy.stats import skew, kurtosis, shapiro
 import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

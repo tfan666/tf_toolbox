@@ -86,32 +86,51 @@ class eda:
             how='left', on='column').round(round_digits)
         return dis_table
 
-    def plot_univariate_distribution(self, col, type='histogram', fig_size=(12,8)):
+    def plot_univariate_distribution(self, col, type='histogram', group=None, fig_size=(12,8)):
         """"
         Compute Univariate Histrogram.
         
         """
         sns.set(rc={'figure.figsize':fig_size})
-        x = self.df[col]
+        df = self.df
+        x = df[col]
         missing_pct = round(x.isnull().sum()/len(x)*100, 1)
         skewness = round(skew(x), 2)
         _kurtosis = round(kurtosis(x), 2)
         if type == 'histogram':
-            ax = sns.histplot(x=x)
+            if group ==None:
+                ax = sns.histplot(x=x)
+            else:
+                ax = sns.histplot(x=col, hue=group, data=df)
         elif type == 'density':
-            ax = sns.kdeplot(x=x)
+            if group ==None:
+                ax = sns.kdeplot(x=x)
+            else:
+                ax = sns.kdeplot(x=col, hue=group, data=df)
         elif type == 'histogram+kde':
-            ax = sns.histplot(x=x, kde=True)
+            if group ==None:
+                ax = sns.histplot(x=x, kde=True)
+            else:
+                ax = sns.histplot(x=col, hue=group, data=df)
         elif type == 'boxplot':
-            ax = sns.boxplot(x=x)
+            if group==None:
+                ax = sns.boxplot(y=x)
+            else:
+                ax = sns.boxplot(y=col, x=group, data=df)
         elif type == 'violin':
-            ax = sns.violinplot(x=x)
+            if group==None:
+                ax = sns.violinplot(y=x)
+            else:
+                ax = sns.violinplot(y=col, x=group, data=df)
         else:
             print("Type has to be one of 'box', 'violin', 'density', 'histogram', or 'histogram+kde." )
-        ax.set_title(
-            f"Distribution for {col} | Skewness: {skewness} | Kurtosis: {_kurtosis} | Missing Pct: {missing_pct}% ",
-            fontsize=fig_size[0]
-        )
+        if group==None:
+            ax.set_title(
+                f"Distribution for {col} | Skewness: {skewness} | Kurtosis: {_kurtosis} | Missing Pct: {missing_pct}% ",
+                fontsize=fig_size[0])
+        else:
+            ax.set_title(f'Distribution of {col} by {group}', fontsize=fig_size[0])
+
 
     def plot_bivariate_distribution(self, col, group, type='density', fig_size=(12,8)):
         df = self.df

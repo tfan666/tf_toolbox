@@ -303,7 +303,7 @@ class eda:
         df = self.df
         if keyword_filter == None:
             interact(
-                self.plot_distribution, 
+                self.plot_univariate_distribution, 
                 col = df.select_dtypes([float, int]).columns)
 
     def correlation_plot(self, correlation_method='pearson', fig_size=(20,15), fig_title=''):

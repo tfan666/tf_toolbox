@@ -23,14 +23,28 @@ def de_least_square(beta, X, y):
     x0 = - 1/n * X.T @ (y - X @ beta)
     return x0
 
-def gradient_descent(grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, return_hist=False):
+def sample_from_matrix(X,y, n_rows):
+    idx = np.int64((np.random.random(size=n_rows)*len(X)).round())
+    X_sample, y_sample = X[idx,], y[idx,]
+    return X_sample, y_sample
+
+def gradient_descent(grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, return_hist=False, stochastic=False, sample_size=100):
     loss_hist = []
-    loss_hist.append(loss(x0,X,y))
-    for i in range(max_iter):
-        x0 = x0 - lr * grad(x0,X,y)
+    if stochastic == False:
         loss_hist.append(loss(x0,X,y))
-        if abs(grad(x0,X,y)).max() < tol:
-            break
+        for i in range(max_iter):
+            x0 = x0 - lr * grad(x0,X,y)
+            loss_hist.append(loss(x0,X,y))
+            if abs(grad(x0,X,y)).max() < tol:
+                break
+    else:
+        X_sample, y_sample = sample_from_matrix(X, y, sample_size)
+        loss_hist.append(loss(x0,X_sample,y_sample))
+        for i in range(max_iter):
+            x0 = x0 - lr * grad(x0,X_sample,y_sample)
+            loss_hist.append(loss(x0,X_sample,y_sample))
+            if abs(grad(x0,X_sample,y_sample)).max() < tol:
+                break
     # print(f"Iter{i}| x: {x0.T}|de_loss: {grad(x0,X,y).T}")
     if return_hist == False:
         return x0
@@ -84,7 +98,7 @@ class linear_regression:
         self.fit_intercept = True
         self.gd_loss_hist = None
     
-    def fit(self, method='OLS', fit_intercept=True, _lambda=1, lr=0.01):
+    def fit(self, method='OLS', fit_intercept=True, _lambda=1, lr=0.01, stochastic=False, sample_size=10):
         """
         This function fit the given data. Available methods:
             - OLS: simple linear regression (Orindary Least Square) using matrix multplication
@@ -112,7 +126,10 @@ class linear_regression:
                 x0=x0, X=X, y=self.y, 
                 grad=de_least_square, 
                 loss=least_square_loss, 
-                lr=lr, return_hist=True)
+                lr=lr, return_hist=True,
+                stochastic=stochastic,
+                sample_size=sample_size
+                )
             self.para['coef'] = beta
         elif method == 'L1':
             x0 = np.zeros(X.shape[1])
@@ -184,3 +201,4 @@ class linear_regression:
                 )
 
         return pd.DataFrame(r)
+

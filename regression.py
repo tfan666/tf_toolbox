@@ -126,7 +126,7 @@ class linear_regression:
             print('Method not found')
         # update model class
         self.method = method
-        self.residuals = self.y-self.predict(self.X)
+        self.residuals = np.array(self.y.reshape(self.n,)-self.predict(self.X)).flatten()
         self.RSS = (np.power(self.residuals,2)).sum()
         self.TSS = (np.power(self.y - self.y.mean(),2)).sum()
         self.r_squared = 1 - self.RSS/self.TSS
@@ -152,10 +152,8 @@ class linear_regression:
 
         def report(i, interval):
             if self.fit_intercept == True:
-                # x0 = new_X[i]
                 X = add_constant(self.X)
             else:
-                # x0 = new_X[i]
                 X = self.X
             x0 = new_X[i]
             if interval == 'confidence':
@@ -186,4 +184,3 @@ class linear_regression:
                 )
 
         return pd.DataFrame(r)
-

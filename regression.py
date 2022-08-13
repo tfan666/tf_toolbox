@@ -5,7 +5,7 @@ from scipy.stats import t
 from joblib import delayed, Parallel
 import scipy.optimize as opt
 
-def least_square(X, y, use_solver=False):
+def least_square_beta_estimator(X, y, use_solver=False):
     if use_solver == False:
         beta = np.linalg.inv(X.T@X) @ X.T @y
     else:
@@ -37,7 +37,7 @@ def gradient_descent(grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, re
     else:
         return x0, loss_hist
 
-def ridge_least_square(X, y, _lambda):
+def ridge_least_square_beta_estimator(X, y, _lambda):
     beta = np.linalg.inv(X.T@X + _lambda * np.identity(len(X.T@X))) @ X.T @y
     return beta
 
@@ -101,10 +101,10 @@ class linear_regression:
             self.fit_intercept = False
         # check fitting methods
         if method == 'OLS':
-            beta = least_square(X=X, y=self.y)
+            beta = least_square_beta_estimator(X=X, y=self.y)
             self.para['coef'] = beta
         elif method == 'OLS_solver':
-            beta = least_square(X=X, y=self.y, use_solver=True)
+            beta = least_square_beta_estimator(X=X, y=self.y, use_solver=True)
             self.para['coef'] = beta
         elif method == 'GD':
             x0 = np.ones((X.shape[1],1))
@@ -120,7 +120,7 @@ class linear_regression:
             self.para['coef'] = beta
         elif method == 'L2':
             y = self.y
-            beta = ridge_least_square(X=X, y=y, _lambda=_lambda)
+            beta = ridge_least_square_beta_estimator(X=X, y=y, _lambda=_lambda)
             self.para['coef'] = beta
         else:
             print('Method not found')

@@ -23,12 +23,14 @@ def de_least_square(beta, X, y):
     x0 = - 1/n * X.T @ (y - X @ beta)
     return x0
 
-def sample_from_matrix(X,y, n_rows):
+def sample_from_matrix(X, y, n_rows):
     idx = np.int64((np.random.random(size=n_rows)*len(X)).round())
     X_sample, y_sample = X[idx,], y[idx,]
     return X_sample, y_sample
 
-def gradient_descent(grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, return_hist=False, stochastic=False, sample_size=100):
+def gradient_descent(
+    grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, 
+    return_hist=False, stochastic=False, sample_size=0.1):
     loss_hist = []
     if stochastic == False:
         loss_hist.append(loss(x0,X,y))
@@ -38,7 +40,7 @@ def gradient_descent(grad, loss, x0, X, y, lr=0.01, max_iter=10000, tol=0.01, re
             if abs(grad(x0,X,y)).max() < tol:
                 break
     else:
-        X_sample, y_sample = sample_from_matrix(X, y, sample_size)
+        X_sample, y_sample = sample_from_matrix(X, y, int(sample_size*len(X)))
         loss_hist.append(loss(x0,X_sample,y_sample))
         for i in range(max_iter):
             x0 = x0 - lr * grad(x0,X_sample,y_sample)
@@ -98,7 +100,9 @@ class linear_regression:
         self.fit_intercept = True
         self.gd_loss_hist = None
     
-    def fit(self, method='OLS', fit_intercept=True, _lambda=1, lr=0.01, stochastic=False, sample_size=10):
+    def fit(
+        self, method='OLS', fit_intercept=True, 
+        _lambda=1, lr=0.01, stochastic=False, sample_size=0.1):
         """
         This function fit the given data. Available methods:
             - OLS: simple linear regression (Orindary Least Square) using matrix multplication
@@ -201,4 +205,3 @@ class linear_regression:
                 )
 
         return pd.DataFrame(r)
-

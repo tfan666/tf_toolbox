@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.linalg import solve
-from scipy.stats import t
+from scipy.stats import t, f
 from joblib import delayed, Parallel
 import scipy.optimize as opt
 
@@ -96,7 +96,17 @@ class linear_regression:
         self.r_squared = None
         self.TSS = None
         self.sd_resid = None
+        self.sigma = None
         self.n = len(y)
+        self.n_col = X.shape[1]
+        self.beta_var = None 
+        self.coef_se = None
+        self.t_stats = None
+        self.p_values = None
+        self.k = None
+        self.k_var = None
+        self.f_stat =  None
+        self.f_stat_p_value = None
         self.fit_intercept = True
         self.gd_loss_hist = None
     
@@ -114,6 +124,7 @@ class linear_regression:
         # check whether intercept is needed
         if fit_intercept == True:
             X = add_constant(self.X)
+            self.n_col += 1
         else:
             X = self.X
             self.fit_intercept = False
@@ -136,6 +147,7 @@ class linear_regression:
                 )
             self.para['coef'] = beta
         elif method == 'L1':
+            y = self.y
             x0 = np.zeros(X.shape[1])
             beta = l1_cost_minimize(x0=x0, _lambda=_lambda, X=X, y=y)
             self.para['coef'] = beta
@@ -153,6 +165,22 @@ class linear_regression:
         self.r_squared = 1 - self.RSS/self.TSS
         self.sd_resid = np.power(self.RSS/(self.n-2),0.5)
         self.transform_dict = None
+
+        if method == 'OLS' or method == 'OLS_solver':
+            self.sigma = np.sqrt((np.power(self.residuals, 2)).sum()/ (self.n - self.n_col))
+            self.beta_var = np.linalg.inv(X.T @ X)*self.sigma**2 
+            self.coef_se = np.diag(self.beta_var)**0.5
+            self.t_stats = np.array(beta).flatten() / self.coef_se
+            self.p_values = 2 * t.cdf(-abs(self.t_stats),self.n-self.n_col)
+            if fit_intercept == True:
+                self.k = np.concatenate(
+                    [np.zeros((self.n_col-1,1)) , np.diag(np.ones(self.n_col-1))], 
+                    axis=1)
+            else:
+                self.k = np.diag(np.ones(self.n_col))
+            self.k_var = self.k @ np.linalg.inv(X.T @ X) @ self.k.T
+            self.f_stat =  float((self.k @ beta).T @ np.linalg.inv(self.k_var) @ (self.k @ beta) / ((self.n_col-1) * self.sigma**2))
+            self.f_stat_p_value = 1 - f.cdf(self.f_stat, self.n_col-1, self.n-self.n_col)
 
     def predict(self, new_X, interval=None, level=0.95, n_jobs=1):
         beta = self.para['coef']
@@ -205,3 +233,20 @@ class linear_regression:
                 )
 
         return pd.DataFrame(r)
+    
+    def summary(self, X_name=None):
+        if self.method == 'OLS' or self.method == 'OLS_solver':
+            beta = np.array(self.para['coef']).flatten()
+            model_summary = pd.DataFrame({
+                'Estimate': np.array(beta).flatten(),
+                'Std. Error': self.coef_se,
+                't statistics': self.t_stats,
+                'Pr(>|t|)': self.p_values,
+                '[0.025': np.array(beta).flatten() - 1.96 * self.coef_se,
+                '0.975]': np.array(beta).flatten() + 1.96 * self.coef_se
+            })
+            if X_name != None:
+                model_summary.index = X_name
+            return model_summary
+        else:
+            print('Only OLS has summary table for now.')

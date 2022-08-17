@@ -191,48 +191,22 @@ class linear_regression:
         if interval == None:
             return y
         
-        y_out = {
-            'mean': [],
-            'lo': [],
-            'hi': []
-        }
         alpha = 1-level
         critical_value = t.ppf(1-alpha/2, self.n-2)
+        if interval == 'confidence':
+            SE = np.sqrt(self.sd_resid**2 * np.diag(new_X @ np.linalg.inv(new_X.T @ new_X) @ new_X.T))
+            _type = 'ci'
+        if interval == 'prediction':
+            SE = np.sqrt(1 + self.sd_resid**2 * np.diag(new_X @ np.linalg.inv(new_X.T @ new_X) @ new_X.T))
+            _type = 'pi'
 
-        def report(i, interval):
-            if self.fit_intercept == True:
-                X = add_constant(self.X)
-            else:
-                X = self.X
-            x0 = new_X[i]
-            if interval == 'confidence':
-                SE_ = np.float64(np.sqrt(self.sd_resid**2 * x0 @ np.linalg.inv(X.T @ X) @ x0.T))
-            if interval == 'prediction':
-                SE_ = np.float64(np.sqrt(1 + self.sd_resid**2 * x0 @ np.linalg.inv(X.T @ X) @ x0.T))
-            hi = y[i] + critical_value*SE_
-            lo = y[i] - critical_value*SE_
-            report = {
-                'mean': y[i],
-                'lo': lo,
-                'hi': hi
-            }
-            return report
+        y_out = pd.DataFrame({
+            'mean': y,
+            f'lo_{level}_{_type}': y - critical_value * SE,
+            f'hi_{level}_{_type}': y + critical_value * SE,
+        })
 
-        if interval=='confidence':
-            r = Parallel(n_jobs=n_jobs, verbose=0)(
-            delayed(report)(
-                i, interval = 'confidence') 
-                for i in range(len(new_X)) 
-                )
-
-        if interval=='prediction':
-            r = Parallel(n_jobs=n_jobs, verbose=0)(
-            delayed(report)(
-                i, interval = 'prediction') 
-                for i in range(len(new_X)) 
-                )
-
-        return pd.DataFrame(r)
+        return y_out
     
     def summary(self, X_name=None):
         if self.method == 'OLS' or self.method == 'OLS_solver':

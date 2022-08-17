@@ -211,13 +211,14 @@ class linear_regression:
     def summary(self, X_name=None):
         if self.method == 'OLS' or self.method == 'OLS_solver':
             beta = np.array(self.para['coef']).flatten()
+            critical_value = t.ppf(1-0.05/2, self.n-2)
             model_summary = pd.DataFrame({
                 'Estimate': np.array(beta).flatten(),
                 'Std. Error': self.coef_se,
                 't statistics': self.t_stats,
                 'Pr(>|t|)': self.p_values,
-                '[0.025': np.array(beta).flatten() - 1.96 * self.coef_se,
-                '0.975]': np.array(beta).flatten() + 1.96 * self.coef_se
+                '[0.025': np.array(beta).flatten() - critical_value * self.coef_se,
+                '0.975]': np.array(beta).flatten() + critical_value * self.coef_se
             })
             if X_name != None:
                 model_summary.index = X_name

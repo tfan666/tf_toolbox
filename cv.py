@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd 
+from joblib import Parallel, delayed
 
 def merge_array(a,b):
     """

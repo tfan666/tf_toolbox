@@ -47,11 +47,22 @@ def generate_k_fold_index(X, y, k, shuffle=True, stratified=False, random_state=
 
     return cv_dict
 
+def random_resample(X, y, target_cnt=None, random_state=1):
+    df = pd.concat([X,y], axis=1)
+    if target_cnt == None:
+        target_cnt = int(y.value_counts().mean())
+        y_class = y.unique()
+    resampled_df = pd.DataFrame([])
+    for i in y_class:
+        df_sub = df.loc[y[y==i].index].sample(n=target_cnt, replace=True, random_state=random_state)
+        resampled_df = pd.concat([resampled_df, df_sub], axis=0)
+    resampled_df = resampled_df.reset_index(drop=True)
+    return resampled_df[resampled_df.columns[:-1]], resampled_df[resampled_df.columns[-1]]
+
 def get_cv_results(k, X, y, model, eval_func, random_state=1, clf_threshold=.5, stratified=True):
     """
     This method run k-fold cross-validation with resampling class. 
     """
-
     kfold_idx = generate_k_fold_index(X=X, y=y, k=k, stratified=stratified)
     def _get_cv_results(i, kfold_idx=kfold_idx, X=X, y=y, model=model, eval_func=eval_func, random_state=random_state, clf_threshold=clf_threshold):
         k_idx = kfold_idx['idx'][i]

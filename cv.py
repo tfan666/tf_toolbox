@@ -59,21 +59,24 @@ def random_resample(X, y, target_cnt=None, random_state=1):
     resampled_df = resampled_df.reset_index(drop=True)
     return resampled_df[resampled_df.columns[:-1]], resampled_df[resampled_df.columns[-1]]
 
-def get_cv_results(k, X, y, model, eval_func, random_state=1, clf_threshold=.5, stratified=True):
+def get_cv_results(k, X, y, model, eval_func, resampler=None, random_state=1, clf_threshold=.5, stratified=True):
     """
-    This method run k-fold cross-validation with resampling class. 
+    This method run k-fold cross-validation. Has options to pass:
+        - model: any predictive model with fit() and predict_proba()
+        - eval_func: evalution metric with "y_true" and "y_pred" args
+        - resampler: optional, resampling process
     """
     kfold_idx = generate_k_fold_index(X=X, y=y, k=k, stratified=stratified)
     def _get_cv_results(i, kfold_idx=kfold_idx, X=X, y=y, model=model, eval_func=eval_func, random_state=random_state, clf_threshold=clf_threshold):
         k_idx = kfold_idx['idx'][i]
         _k_idx = np.array(list(set(y.index.values) - set(k_idx)))
         k_X_train, k_y_train, k_X_test, k_y_test = X.iloc[_k_idx], y[_k_idx], X.iloc[k_idx], y[k_idx]
-        rs_k_X_train, rs_k_y_train = random_resample(X=k_X_train, y=k_y_train, target_cnt=None, random_state=1)
 
-        model.fit(X=rs_k_X_train, y=rs_k_y_train)
+        if resampler != None:
+            k_X_train, k_y_train = resampler(X=k_X_train, y=k_y_train, target_cnt=None, random_state=1)
 
+        model.fit(X=k_X_train, y=k_y_train)
         k_y_pred = model.predict_proba(k_X_test)[::,1]
-
         score = eval_func(y_true=k_y_test, y_pred=np.where(k_y_pred>clf_threshold,1,0))
 
         eval_report = {

@@ -60,7 +60,7 @@ def random_resample(X, y, target_cnt=None, random_state=1):
     resampled_df = resampled_df.reset_index(drop=True)
     return resampled_df[resampled_df.columns[:-1]], resampled_df[resampled_df.columns[-1]]
 
-def get_cv_results(k, X, y, model, eval_func, resampler=None, random_state=1, clf_threshold=.5, stratified=True):
+def get_cv_results(k, X, y, model, eval_func, resampler=None, random_state=1, clf_threshold=.5, stratified=True, n_jobs=1):
     """
     This method run k-fold cross-validation. Has options to pass:
         - model: any predictive model with fit() and predict_proba()
@@ -68,6 +68,7 @@ def get_cv_results(k, X, y, model, eval_func, resampler=None, random_state=1, cl
         - resampler: optional, resampling process
     """
     kfold_idx = generate_k_fold_index(X=X, y=y, k=k, stratified=stratified)
+
     def _get_cv_results(i, kfold_idx=kfold_idx, X=X, y=y, model=model, eval_func=eval_func, random_state=random_state, clf_threshold=clf_threshold):
         k_idx = kfold_idx['idx'][i]
         _k_idx = np.array(list(set(y.index.values) - set(k_idx)))
@@ -86,8 +87,8 @@ def get_cv_results(k, X, y, model, eval_func, resampler=None, random_state=1, cl
         }
         return eval_report
 
-    r = Parallel(n_jobs=-2)(delayed(_get_cv_results) (
-        i, kfold_idx=kfold_idx, X=X, y=y, model=model, eval_func=f2_score) 
+    r = Parallel(n_jobs=n_jobs)(delayed(_get_cv_results) (
+        i, kfold_idx=kfold_idx, X=X, y=y, model=model, eval_func=eval_func) 
         for i in range(k)
         )
 

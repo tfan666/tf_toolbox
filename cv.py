@@ -43,7 +43,7 @@ def generate_k_fold_index(X, y, k, shuffle=True, stratified=False, random_state=
             else:
                 for i in range(k-1):
                     cv_dict['idx'][i] = merge_array(cv_idx[i*dist: (i+1)*dist], cv_dict['idx'][i])
-                cv_dict['idx'][i] = merge_array(cv_idx[(k-1)*dist:], cv_dict['idx'][i])
+                cv_dict['idx'][k-1] = merge_array(cv_idx[(k-1)*dist:], cv_dict['idx'][k-1])
                     
 
     return cv_dict

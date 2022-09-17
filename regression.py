@@ -14,7 +14,7 @@ def least_square_beta_estimator(X, y, use_solver=False):
 
 def least_square_loss(beta, X, y):
     n = X.shape[1]
-    beta_l1 = np.matrix(beta).reshape(n,1)
+    beta_l1 = np.array(beta).reshape(n,1)
     cost = (1/(2*n)) *np.power((y- X @ beta ),2).sum()
     return cost
 
@@ -58,12 +58,12 @@ def ridge_least_square_beta_estimator(X, y, _lambda):
     return beta
 
 def l1_cost_function(beta_l1, _lambda, X, y):
-    beta_l1 = np.matrix(beta_l1).reshape(X.shape[1],1)
+    beta_l1 = np.array(beta_l1).reshape(X.shape[1],1)
     cost = (1/2)*np.power((y - X @ beta_l1 ),2).sum() + _lambda * abs(beta_l1).sum()
     return cost
 
 def l1_cost_minimize(x0, _lambda, X, y):
-    x0 = np.matrix(x0).reshape(len(x0),1)
+    x0 = np.array(x0).reshape(len(x0),1)
 
     res = opt.minimize(
         fun=l1_cost_function, 
@@ -83,10 +83,10 @@ def add_constant(X):
 class linear_regression:
     "This class stores methods for linear regressions"
     def __init__(self, X, y):
-        if isinstance(X, np.matrix) == True:
+        if isinstance(X, np.ndarray) == True:
             self.X = X
         else:
-            self.X = np.matrix(X)
+            self.X = np.array(X)
         
         self.y = y
         self.para = {}

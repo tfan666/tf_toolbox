@@ -88,7 +88,11 @@ class linear_regression:
         else:
             self.X = np.array(X)
         
-        self.y = y
+        if isinstance(y, np.ndarray) == True:
+            self.y = y
+        else:
+            self.y = np.array(y)
+        
         self.para = {}
         self.method = None
         self.residuals = None
@@ -187,7 +191,7 @@ class linear_regression:
         if self.fit_intercept == True:
             new_X = add_constant(new_X)
         y = new_X @ beta 
-        y = np.array(y).reshape(self.n,)
+        y = np.array(y).reshape(len(y),)
         if interval == None:
             return y
         

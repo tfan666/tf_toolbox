@@ -81,20 +81,25 @@ def add_constant(X):
     return X
 
 class linear_regression:
-    "This class stores methods for linear regressions"
-    def __init__(self, X, y):
-        if isinstance(X, np.ndarray) == True:
-            self.X = X
-        else:
-            self.X = np.array(X)
-        
-        if isinstance(y, np.ndarray) == True:
-            self.y = y
-        else:
-            self.y = np.array(y)
-        
+    """
+    This class stores methods for linear regressions.
+    Available methods:
+            - OLS: simple linear regression (Orindary Least Square) using matrix multplication
+            - OLS_solver: simple linear regression (Orindary Least Square) using linear solver
+            - GD: Gradient Desecent
+            - L1: Lasso Regression
+            - L2: Ridge Regression
+    """
+    def __init__(self, method='OLS', lr=None, fit_intercept=True, _lambda=None, stochastic=False, sample_size=0.1):
+        self.X = None 
+        self.y = None
+        self.lr = lr
         self.para = {}
-        self.method = None
+        self.method = method
+        self.fit_intercept = fit_intercept
+        self.sample_size = sample_size
+        self.stochastic = stochastic
+        self._lambda = _lambda
         self.residuals = None
         self.RSS = None
         self.r_squared = None
@@ -111,58 +116,61 @@ class linear_regression:
         self.k_var = None
         self.f_stat =  None
         self.f_stat_p_value = None
-        self.fit_intercept = True
         self.gd_loss_hist = None
     
-    def fit(
-        self, method='OLS', fit_intercept=True, 
-        _lambda=1, lr=0.01, stochastic=False, sample_size=0.1):
+    def fit(self, X, y):
         """
-        This function fit the given data. Available methods:
-            - OLS: simple linear regression (Orindary Least Square) using matrix multplication
-            - OLS_solver: simple linear regression (Orindary Least Square) using linear solver
-            - GD: Gradient Desecent
-            - L1: Lasso Regression
-            - L2: Ridge Regression
+        This function fit the given data. 
         """
+        # take X, y input
+        if isinstance(X, np.ndarray) == True:
+            self.X = X
+        else:
+            self.X = np.array(X)
+                
+        if isinstance(y, np.ndarray) == True:
+            self.y = y
+        else:
+            self.y = np.array(y)
+                
         # check whether intercept is needed
-        if fit_intercept == True:
+        if self.fit_intercept == True:
             X = add_constant(self.X)
             self.n_col += 1
         else:
             X = self.X
             self.fit_intercept = False
+
         # check fitting methods
-        if method == 'OLS':
+        if self.method == 'OLS':
             beta = least_square_beta_estimator(X=X, y=self.y)
             self.para['coef'] = beta
-        elif method == 'OLS_solver':
+        elif self.method == 'OLS_solver':
             beta = least_square_beta_estimator(X=X, y=self.y, use_solver=True)
             self.para['coef'] = beta
-        elif method == 'GD':
+        elif self.method == 'GD':
             x0 = np.ones((X.shape[1],1))
             beta, self.gd_loss_hist = gradient_descent(
                 x0=x0, X=X, y=self.y, 
                 grad=de_least_square, 
                 loss=least_square_loss, 
-                lr=lr, return_hist=True,
-                stochastic=stochastic,
-                sample_size=sample_size
+                lr=self.lr, return_hist=True,
+                stochastic=self.stochastic,
+                sample_size=self.sample_size
                 )
             self.para['coef'] = beta
-        elif method == 'L1':
+        elif self.method == 'L1':
             y = self.y
             x0 = np.zeros(X.shape[1])
-            beta = l1_cost_minimize(x0=x0, _lambda=_lambda, X=X, y=y)
+            beta = l1_cost_minimize(x0=x0, _lambda=self._lambda, X=X, y=y)
             self.para['coef'] = beta
-        elif method == 'L2':
+        elif self.method == 'L2':
             y = self.y
-            beta = ridge_least_square_beta_estimator(X=X, y=y, _lambda=_lambda)
+            beta = ridge_least_square_beta_estimator(X=X, y=y, _lambda=self._lambda)
             self.para['coef'] = beta
         else:
             print('Method not found')
         # update model class
-        self.method = method
         self.residuals = np.array(self.y.reshape(self.n,)-self.predict(self.X)).flatten()
         self.RSS = (np.power(self.residuals,2)).sum()
         self.TSS = (np.power(self.y - self.y.mean(),2)).sum()
@@ -170,13 +178,13 @@ class linear_regression:
         self.sd_resid = np.power(self.RSS/(self.n-2),0.5)
         self.transform_dict = None
 
-        if method == 'OLS' or method == 'OLS_solver':
+        if self.method == 'OLS' or self.method == 'OLS_solver':
             self.sigma = np.sqrt((np.power(self.residuals, 2)).sum()/ (self.n - self.n_col))
             self.beta_var = np.linalg.inv(X.T @ X)*self.sigma**2 
             self.coef_se = np.diag(self.beta_var)**0.5
             self.t_stats = np.array(beta).flatten() / self.coef_se
             self.p_values = 2 * t.cdf(-abs(self.t_stats),self.n-self.n_col)
-            if fit_intercept == True:
+            if self.fit_intercept == True:
                 self.k = np.concatenate(
                     [np.zeros((self.n_col-1,1)) , np.diag(np.ones(self.n_col-1))], 
                     axis=1)

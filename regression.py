@@ -106,8 +106,8 @@ class linear_regression:
         self.TSS = None
         self.sd_resid = None
         self.sigma = None
-        self.n = len(y)
-        self.n_col = X.shape[1]
+        self.n = None
+        self.n_col = None
         self.beta_var = None 
         self.coef_se = None
         self.t_stats = None
@@ -132,6 +132,9 @@ class linear_regression:
             self.y = y
         else:
             self.y = np.array(y)
+        # update paras
+        self.n = len(self.y)
+        self.n_col = self.X.shape[1]
                 
         # check whether intercept is needed
         if self.fit_intercept == True:

@@ -25,3 +25,19 @@ def f2_score(y_true=None, y_pred=None, precision=None, recall=None, type='direct
 def log_loss(y_prob, y_true):
     log_loss = -(y*np.log(p) + (1-y)*np.log(1-p)).mean()
     return log_loss
+
+def gini(X:np.ndarray or list):
+    """
+    Compute Gini Index 
+    X: can be either numpy array or python list
+    """
+    if isinstance(X, list):
+        X = np.array(X)
+
+    K = np.unique(X)
+    cnt = len(X)
+    gini = 1
+    for k in K:
+        pk = np.sum(([X==k]))/cnt
+        gini -= pk ** 2 
+    return gini

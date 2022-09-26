@@ -26,9 +26,9 @@ def log_loss(y_prob, y_true):
     log_loss = -(y*np.log(p) + (1-y)*np.log(1-p)).mean()
     return log_loss
 
-def gini(X:np.ndarray or list):
+def gini_impurity(X:np.ndarray or list):
     """
-    Compute Gini Index 
+    Compute Gini Impurity 
     X: can be either numpy array or python list
     """
     if isinstance(X, list):

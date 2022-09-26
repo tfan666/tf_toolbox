@@ -36,8 +36,24 @@ def gini_impurity(X:np.ndarray or list):
 
     K = np.unique(X)
     cnt = len(X)
-    gini = 1
+    gini_impurity = 1
     for k in K:
         pk = np.sum(([X==k]))/cnt
-        gini -= pk ** 2 
-    return gini
+        gini_impurity -= pk ** 2 
+    return gini_impurity
+
+def entropy_impurity(X:np.ndarray or list):
+    """
+    Compute Entropy Impurity 
+    X: can be either numpy array or python list
+    """
+    if isinstance(X, list):
+        X = np.array(X)
+
+    K = np.unique(X)
+    cnt = len(X)
+    entropy_impurity = 0
+    for k in K:
+        pk = np.sum(([X==k]))/cnt
+        entropy_impurity -= pk * np.log2(pk)
+    return entropy_impurity

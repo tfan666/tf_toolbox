@@ -73,7 +73,7 @@ def find_binary_split(X: np.ndarray, y: np.ndarray, impurity_func: callable):
     Params:
         - X: features
         - y: labels
-        - information_gain_func: information gain function to compute impurity
+        - impurity_func: information gain function to compute impurity
 
     Output:
         - binary bin threshold

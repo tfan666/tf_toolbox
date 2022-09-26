@@ -65,3 +65,29 @@ def combined_feature_selector(
             if feature_out0[i] == True and feature_out[i] == False:
                 feature_out0[i] == False
     return X.columns[feature_out0]
+
+def find_binary_split(X: np.ndarray, y: np.ndarray, impurity_func: callable):
+    """
+    Function that find the best binary split that maximizes the information gain.
+
+    Params:
+        - X: features
+        - y: labels
+        - information_gain_func: information gain function to compute impurity
+
+    Output:
+        - binary bin threshold
+    """
+    df = pd.DataFrame({
+        'X': X,
+        'y': y
+    })
+
+    info_gain_base = 0
+    for node in np.unique(df['X']).round():
+        cut = node + .5
+        info_gain = impurity_func(df['y']) - (impurity_func(df[df['X'] >cut]['y']) + impurity_func(df[df['X'] <cut]['y']))
+        if info_gain > info_gain_base:
+            info_gain_base = info_gain
+            node_out = cut
+    return node_out

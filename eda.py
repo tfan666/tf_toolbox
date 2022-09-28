@@ -128,9 +128,9 @@ class eda:
         if group==None:
             ax.set_title(
                 f"Distribution for {col} | Skewness: {skewness} | Kurtosis: {_kurtosis} | Missing Pct: {missing_pct}% ",
-                fontsize=fig_size[0])
+                fontsize=fig_size[0]*1.5)
         else:
-            ax.set_title(f'Distribution of {col} By {group.capitalize()}', fontsize=fig_size[0])
+            ax.set_title(f'Distribution of {col} By {group.capitalize()}', fontsize=fig_size[0]*1.5)
 
 
     def plot_bivariate_distribution(self, col, group, type='density', fig_size=(12,8)):

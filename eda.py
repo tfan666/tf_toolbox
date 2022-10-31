@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from wordcloud import WordCloud
 
 
 def shapiro_test(x):
@@ -17,6 +18,27 @@ def shapiro_test(x):
     """
     p_value = shapiro(x)[1]
     return p_value
+
+def plot_wordcloud(X: pd.Series, fig_size=(12,8)):
+    """
+    Plot frequency-based on word cloud from pandas df
+    """
+
+    wc = WordCloud(
+        width = fig_size[0]*100, 
+        height = fig_size[1]*100,
+        background_color ='white',
+        relative_scaling=1,
+        min_font_size = 10)
+
+    p = wc.generate_from_frequencies(dict(X.value_counts()))
+
+    plt.figure(figsize = fig_size, facecolor = None)
+    plt.imshow(p)
+    plt.axis("off")
+    plt.tight_layout(pad = 0)
+    plt.show()
+    
 
 class eda:
     """

@@ -53,7 +53,30 @@ class eda:
         size = self.df.memory_usage().sum()/1e9
         print(f"This dataset has {n_cols} columns and {n_rows} rows. The estimated storage size is {size} GB ")
         
+    def distinct_report(self):
+        distinc = pd.DataFrame({
+            'column': self.df.columns,
+            'distinct_cnt': [len(self.df[col].unique()) for col in self.df.columns] 
+            }).assign(
+            distinct_ratio = lambda x: x.distinct_cnt / len(self.df)
+            )
+        return distinc
 
+    def numeric_eda_report(self):
+        dict_report = self.distinct_report()
+        distri_report = self.distribution_report()
+        mis_report = self.missing_data_report()
+        norm_report = self.normality_test()
+        num_eda_report = pd.merge(
+                pd.merge(
+                    pd.merge(
+                        mis_report, dict_report, on='column'), 
+                    distri_report.drop(columns='count'), on='column'),
+                norm_report.drop(columns='p_value'), on='column')
+        
+        return num_eda_report
+
+    
     def column_type_report(self):
         """
         Compute table format column data type report. 
@@ -320,7 +343,7 @@ class eda:
         """
         df = self.df
         missing_report = pd.DataFrame({
-            'columns': df.columns,
+            'column': df.columns,
             'row_cnt': len(df),
             'missing_cnt': df.isnull().sum().values,
             'missing_ratio': df.isnull().sum().values/len(df)

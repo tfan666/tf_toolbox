@@ -58,7 +58,7 @@ class eda:
             'column': self.df.columns,
             'distinct_cnt': [len(self.df[col].unique()) for col in self.df.columns] 
             }).assign(
-            distinct_ratio = lambda x: x.distinct_cnt / len(self.df)
+            distinct_ratio = lambda x: (x.distinct_cnt / len(self.df)).round(3)
             )
         return distinc
 
@@ -75,6 +75,25 @@ class eda:
                 norm_report.drop(columns='p_value'), on='column')
         
         return num_eda_report
+
+    def categorical_eda_report(self):
+        dict_report = self.distinct_report()
+        mis_report = self.missing_data_report()
+        mode_report = pd.DataFrame({
+            'column': self.df.select_dtypes('O').columns,
+            'most_freqent_value': [self.df[col].value_counts().index.values[0] for col in self.df.select_dtypes('O').columns],
+            'most_freqent_value_cnt': [self.df[col].value_counts().values[0] for col in self.df.select_dtypes('O').columns]
+        }).assign(
+            most_freqent_ratio = lambda x: (x.most_freqent_value_cnt / len(self.df)).round(3)
+        )
+        categorical_eda_report = pd.merge(
+            mis_report,
+            pd.merge(
+                dict_report, 
+                mode_report, 
+                on='column'), 
+            on='column')
+        return categorical_eda_report
 
     
     def column_type_report(self):
@@ -346,7 +365,7 @@ class eda:
             'column': df.columns,
             'row_cnt': len(df),
             'missing_cnt': df.isnull().sum().values,
-            'missing_ratio': df.isnull().sum().values/len(df)
+            'missing_ratio': (df.isnull().sum().values/len(df)).round(3)
         })
         return missing_report
 

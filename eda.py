@@ -19,7 +19,7 @@ def shapiro_test(x):
     p_value = shapiro(x)[1]
     return p_value
 
-def plot_wordcloud(X: pd.Series, fig_size=(12,8)):
+def plot_wordcloud(X: pd.Series, fig_size=(12,8), title=''):
     """
     Plot frequency-based on word cloud from pandas df
     """
@@ -28,6 +28,7 @@ def plot_wordcloud(X: pd.Series, fig_size=(12,8)):
         width = fig_size[0]*100, 
         height = fig_size[1]*100,
         background_color ='white',
+        include_numbers=True,
         relative_scaling=1,
         min_font_size = 10)
 
@@ -37,6 +38,7 @@ def plot_wordcloud(X: pd.Series, fig_size=(12,8)):
     plt.imshow(p)
     plt.axis("off")
     plt.tight_layout(pad = 0)
+    plt.title(title, fontsize=fig_size[0])
     plt.show()
     
 
@@ -421,7 +423,7 @@ class eda:
                 col=self.df.select_dtypes([float, int]).columns, 
                 type=type)
 
-    def correlation_plot(self, correlation_method='pearson', fig_size=(20,15), fig_title=''):
+    def correlation_plot(self, correlation_method='pearson', fig_size=(20,15), fig_title=None):
         """
         Compute correlation matrix plot. Available correlation methods:
             - Pearson 
@@ -446,6 +448,8 @@ class eda:
             annot=True, fmt='.2f',
             square=True, linewidths=.5, 
             cbar_kws={"shrink": .5})
+        if fig_title==None:
+            fig_title = f"{correlation_method.capitalize()} Correalation Matrix"
         ax.set_title(fig_title, fontsize=fig_size[0])
 
     def association_plot(self, columns=None):

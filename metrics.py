@@ -57,3 +57,40 @@ def entropy_impurity(X:np.ndarray or list):
         pk = np.sum(([X==k]))/cnt
         entropy_impurity -= pk * np.log2(pk)
     return entropy_impurity
+
+def area(a):
+    """
+    Helper function for IoU()
+    """
+    assert a[0] < a[2]
+    assert a[1] > a[3]
+    return abs((a[2] - a[0]) * (a[3] - a[1]))
+area(a)
+
+def interact_area(a,b):
+    """
+    Helper function for IoU()
+    """
+    assert a[0] < a[2]
+    assert a[1] > a[3]
+    assert b[0] < b[2]
+    assert b[1] > b[3]
+
+    x = [
+        max(a[0], b[0]),
+        min(a[1], b[1]),
+        min(a[2], a[2]),
+        max(a[3], a[3])
+    ]
+    return area(x)
+
+def IoU(a,b):
+    """
+    Intersect Over Union:
+        - a,b : list of four elements [top left x, top left y, bottom right x, bottom right y] 
+    """
+    assert a[0] < a[2]
+    assert a[1] > a[3]
+    assert b[0] < b[2]
+    assert b[1] > b[3]
+    return interact_area(a,b)/(area(a) + area(b) - interact_area(a,b)) 

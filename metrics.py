@@ -71,18 +71,22 @@ def interact_area(a,b):
     """
     Helper function for IoU()
     """
+    # make sure this is a rectangular
     assert a[0] < a[2]
     assert a[1] > a[3]
     assert b[0] < b[2]
     assert b[1] > b[3]
-
-    x = [
-        max(a[0], b[0]),
-        min(a[1], b[1]),
-        min(a[2], a[2]),
-        max(a[3], a[3])
-    ]
-    return area(x)
+    # check if there is any overlap areas
+    if a[2] <= b[0] or a[0] >= b[2] or a[3] >= b[1] or a[1] <= b[3]:
+        return 0
+    else:
+        x = [
+            max(a[0], b[0]),
+            min(a[1], b[1]),
+            min(a[2], a[2]),
+            max(a[3], a[3])
+        ]
+        return area(x)
 
 def IoU(a,b):
     """

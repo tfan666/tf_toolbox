@@ -93,6 +93,7 @@ def IoU(a,b):
     Intersect Over Union:
         - a,b : list of four elements [top left x, top left y, bottom right x, bottom right y] 
     """
+    # make sure this is a rectangular
     assert a[0] < a[2]
     assert a[1] > a[3]
     assert b[0] < b[2]

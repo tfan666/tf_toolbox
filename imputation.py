@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def MICE(df, estimator, first_fill='mean', iterations=10, return_type='data'):
+def MICE(df, estimator, first_fill='mean', iterations=10, return_type='data', random_state=1):
     """
     df: pandas dataframe
     estimator: preditecive model used to impute data
@@ -23,7 +23,10 @@ def MICE(df, estimator, first_fill='mean', iterations=10, return_type='data'):
                 subset = df_.iloc[df.index.difference(col_missing_idx)]
                 X_train, y_train = subset.drop(columns=col), subset[col]
                 X_test = df_.drop(columns=col).iloc[col_missing_idx]
-                imputer = estimator()
+                try:
+                    imputer = estimator(random_state=random_state)
+                except:
+                    imputer = estimator()
                 imputer.fit(X=np.array(X_train), y=np.array(y_train))
                 y_pred = imputer.predict(X_test)
                 df_[col].loc[col_missing_idx] = y_pred
